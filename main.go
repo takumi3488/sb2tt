@@ -58,7 +58,8 @@ func main() {
 	r.POST("/timetree", func(c *gin.Context) {
 		println(c.Params)
 		res := struct {
-			instllation struct {
+			action string
+			installation struct {
 				id          string
 				application struct {
 					id string
@@ -66,7 +67,9 @@ func main() {
 			}
 		}{}
 		c.BindJSON(&res)
-		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID\n"+res.instllation.id+"\n\nAPPLICATION_ID\n"+res.instllation.application.id)).Do()
+		if res.action == "created" {
+			bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID\n"+res.installation.id+"\n\nAPPLICATION_ID\n"+res.installation.application.id)).Do()
+		}
 	})
 	r.Run()
 }
