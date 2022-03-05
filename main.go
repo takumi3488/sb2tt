@@ -11,12 +11,28 @@ func main() {
 	bot, err := linebot.New(os.Getenv("LINE_CHANNEL_SECRET"), os.Getenv("LINE_ACCESS_TOKEN"))
 	if err != nil {
 		println(err)
+		return
 	}
 	if bot != nil {
 		println("OK")
 	}
 	r := gin.Default()
 	r.POST("/line", func(c *gin.Context) {
+		events, err := bot.ParseRequest(c.Request)
+		if err != nil {
+			println(err)
+		}
+		for _, event := range events {
+			if event.Type == linebot.EventTypeMessage {
+				replyToken := event.ReplyToken
+				var messages []linebot.SendingMessage
+				messages = append(messages, linebot.NewTextMessage("OK"))
+				_, err = bot.ReplyMessage(replyToken, messages...).Do()
+				if err != nil {
+					println(err)
+				}
+			}
+		}
 		c.JSON(200, gin.H{
 			"message": "OK",
 		})
