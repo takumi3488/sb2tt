@@ -29,11 +29,21 @@ func main() {
 		}
 		for _, event := range events {
 			if event.Type == linebot.EventTypeMessage {
-				var messages []linebot.SendingMessage
-				messages = append(messages, linebot.NewTextMessage("OK"))
-				_, err = bot.ReplyMessage(event.ReplyToken, messages...).Do()
-				if err != nil {
-					println(err.Error())
+				switch message := event.Message.(type) {
+				case *linebot.TextMessage:
+					text := strings.TrimSpace(message.Text)
+					if strings.HasSuffix(text, "シフト管理アプリ「シフトボード」で作成") {
+						ss := parse(text, "", time.Now().Local())
+						for _, v := range ss {
+							_, err := bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s\n%s-%s", v.title, v.start_at, v.end_at))).Do()
+							if err != nil {
+								println(err.Error())
+							}
+						}
+					}
+					if err != nil {
+						println(err.Error())
+					}
 				}
 			}
 		}
