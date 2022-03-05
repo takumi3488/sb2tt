@@ -1,10 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"golang.org/x/exp/utf8string"
 )
 
 func main() {
@@ -37,4 +42,43 @@ func main() {
 		})
 	})
 	r.Run()
+}
+
+type Schedule struct {
+	title    string
+	start_at string
+	end_at   string
+}
+
+func parse(c string, ttl string, now time.Time) []Schedule {
+	rows := strings.Split(c, "\n")
+	var shedules []Schedule
+	for i := 0; ; i++ {
+		t := rows[2*i]
+		if t == "" {
+			break
+		}
+		n := rows[2*i+1][2:]
+		month := t[0:2]
+		year := now.Year()
+		month_int, _ := strconv.Atoi(month)
+		if int(now.Month())-8 > month_int {
+			year++
+		}
+		date := t[3:5]
+		tt := utf8string.NewString(t)
+		start_at := tt.Slice(8, 13)
+		end_at := tt.Slice(16, 21)
+		s := new(Schedule)
+		s.title = ttl
+		if s.title == "" {
+			s.title = n
+		}
+		dt := fmt.Sprintf("%d-%s-%sT", year, month, date)
+		e := ":00.000Z"
+		s.start_at = fmt.Sprintf("%s%s%s", dt, start_at, e)
+		s.end_at = fmt.Sprintf("%s%s%s", dt, end_at, e)
+		shedules = append(shedules, *s)
+	}
+	return shedules
 }
