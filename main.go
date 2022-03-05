@@ -56,13 +56,17 @@ func main() {
 
 	// TimeTree Calender Appをカレンダーに追加した際の通知
 	r.POST("/timetree", func(c *gin.Context) {
+		println(c.Params)
 		res := struct {
 			instllation struct {
-				id string
+				id          string
+				application struct {
+					id string
+				}
 			}
 		}{}
-		c.ShouldBind(&res)
-		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID"+res.instllation.id)).Do()
+		c.BindJSON(&res)
+		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID\n"+res.instllation.id+"\n\nAPPLICATION_ID\n"+res.instllation.application.id)).Do()
 	})
 	r.Run()
 }
