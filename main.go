@@ -62,7 +62,7 @@ func main() {
 			}
 		}{}
 		c.ShouldBind(&res)
-		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID"+res.instllation.id))
+		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID"+res.instllation.id)).Do()
 	})
 	r.Run()
 }
