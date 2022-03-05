@@ -22,6 +22,8 @@ func main() {
 		println("OK")
 	}
 	r := gin.Default()
+
+	// LINE メッセージに対する処理
 	r.POST("/line", func(c *gin.Context) {
 		events, err := bot.ParseRequest(c.Request)
 		if err != nil {
@@ -50,6 +52,17 @@ func main() {
 		c.JSON(200, gin.H{
 			"message": "OK",
 		})
+	})
+
+	// TimeTree Calender Appをカレンダーに追加した際の通知
+	r.POST("/timetree", func(c *gin.Context) {
+		res := struct {
+			instllation struct {
+				id string
+			}
+		}{}
+		c.ShouldBind(&res)
+		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID"+res.instllation.id))
 	})
 	r.Run()
 }
