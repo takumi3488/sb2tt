@@ -24,10 +24,9 @@ func main() {
 		}
 		for _, event := range events {
 			if event.Type == linebot.EventTypeMessage {
-				replyToken := event.ReplyToken
 				var messages []linebot.SendingMessage
 				messages = append(messages, linebot.NewTextMessage("OK"))
-				_, err = bot.ReplyMessage(replyToken, messages...).Do()
+				_, err = bot.ReplyMessage(event.ReplyToken, messages...).Do()
 				if err != nil {
 					println(err)
 				}
