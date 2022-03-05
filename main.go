@@ -10,7 +10,7 @@ import (
 func main() {
 	bot, err := linebot.New(os.Getenv("LINE_CHANNEL_SECRET"), os.Getenv("LINE_ACCESS_TOKEN"))
 	if err != nil {
-		println(err)
+		println(err.Error())
 		return
 	}
 	if bot != nil {
@@ -20,7 +20,7 @@ func main() {
 	r.POST("/line", func(c *gin.Context) {
 		events, err := bot.ParseRequest(c.Request)
 		if err != nil {
-			println(err)
+			println(err.Error())
 		}
 		for _, event := range events {
 			if event.Type == linebot.EventTypeMessage {
@@ -28,7 +28,7 @@ func main() {
 				messages = append(messages, linebot.NewTextMessage("OK"))
 				_, err = bot.ReplyMessage(event.ReplyToken, messages...).Do()
 				if err != nil {
-					println(err)
+					println(err.Error())
 				}
 			}
 		}
