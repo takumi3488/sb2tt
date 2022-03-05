@@ -67,10 +67,10 @@ func main() {
 		buf := make([]byte, 2048)
 		n, _ := c.Request.Body.Read(buf)
 		b := string(buf[0:n])
+		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintln(b))).Do()
 		if res.action == "created" {
-			bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintln(b))).Do()
+			c.JSON(200, gin.H{"res": res})
 		}
-		c.JSON(200, gin.H{"res": res})
 	})
 	r.Run()
 }
