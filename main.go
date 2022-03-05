@@ -49,14 +49,11 @@ func main() {
 				}
 			}
 		}
-		c.JSON(200, gin.H{
-			"message": "OK",
-		})
+		c.JSON(200, gin.H{})
 	})
 
 	// TimeTree Calender Appをカレンダーに追加した際の通知
 	r.POST("/timetree", func(c *gin.Context) {
-		println(c.Params)
 		res := struct {
 			action string
 			installation struct {
@@ -70,6 +67,7 @@ func main() {
 		if res.action == "created" {
 			bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("INSTALLATION_ID\n"+res.installation.id+"\n\nAPPLICATION_ID\n"+res.installation.application.id)).Do()
 		}
+		c.JSON(200, gin.H{"res": res})
 	})
 	r.Run()
 }
