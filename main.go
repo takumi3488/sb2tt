@@ -36,8 +36,8 @@ func main() {
 				case *linebot.TextMessage:
 					text := strings.TrimSpace(message.Text)
 
-					// シフトボードからの共有の場合
 					if strings.HasSuffix(text, "シフト管理アプリ「シフトボード」で作成") {
+						// シフトボードからの共有
 						ss := parse(text, "", time.Now().Local())
 						for _, v := range ss {
 							_, err := bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s\n%s-%s", v.title, v.start_at, v.end_at))).Do()
@@ -45,11 +45,8 @@ func main() {
 								println(err.Error())
 							}
 						}
-					}
-
-					// Installation id の設定
-					r := regexp.MustCompile(`\d+`)
-					if r.MatchString(text) {
+					} else if r := regexp.MustCompile(`\d+`); r.MatchString(text) {
+						// Installation id の設定
 						db, err := model.DbOpen()
 						if err != nil {
 							println(err.Error())
@@ -57,6 +54,16 @@ func main() {
 						}
 						installation_id, _ := strconv.Atoi(text)
 						db.Model(&model.LineUser{}).Where("user_id = ?", event.Source.UserID).Update("installation_id", installation_id)
+						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("Installation ID set to %d.", installation_id)))
+					} else if r := regexp.MustCompile(`^\n`); r.MatchString(text) {
+						// デフォルトタイトルの設定
+						db, err := model.DbOpen()
+						if err != nil {
+							println(err.Error())
+							return
+						}
+						db.Model(&model.LineUser{}).Where("user_id = ?", event.Source.UserID).Update("default_schedule_title", text)
+						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("Default scedule title set to %s.", text)))
 					}
 
 					if err != nil {
@@ -74,7 +81,7 @@ func main() {
 					return
 				}
 				var user model.LineUser
-				db.FirstOrCreate(&user, model.LineUser{UserId: userId})
+				db.Where(model.LineUser{UserId: userId}).FirstOrCreate(&user)
 				if user.InstallationId == 0 {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Please send your installation id of TimeTree.")).Do()
 				}
