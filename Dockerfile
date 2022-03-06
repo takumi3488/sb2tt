@@ -20,6 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /app/main
 
 FROM scratch as prod
 
-COPY --from=builder /app/main /app
+WORKDIR /app
+COPY --from=builder /app/main .
 
-CMD ["/app/main"]
+CMD ["./main"]
