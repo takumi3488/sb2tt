@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +46,19 @@ func main() {
 							}
 						}
 					}
+
+					// Installation id の設定
+					r := regexp.MustCompile(`\d+`)
+					if r.MatchString(text) {
+						db, err := model.DbOpen()
+						if err != nil {
+							println(err.Error())
+							return
+						}
+						installation_id, _ := strconv.Atoi(text)
+						db.Model(&model.LineUser{}).Where("user_id = ?", event.Source.UserID).Update("installation_id", installation_id)
+					}
+
 					if err != nil {
 						println(err.Error())
 					}
