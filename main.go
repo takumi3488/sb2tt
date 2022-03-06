@@ -58,7 +58,7 @@ func main() {
 						}
 						installation_id, _ := strconv.Atoi(text)
 						db.Model(&model.LineUser{}).Where("user_id = ?", event.Source.UserID).Update("installation_id", installation_id)
-						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("Installation ID set to %d.", installation_id)))
+						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("Installation ID set to %d.", installation_id))).Do()
 					} else if r := regexp.MustCompile(`[^\n]+`); r.MatchString(text) {
 						// デフォルトタイトルの設定
 						db, err := model.DbOpen()
@@ -67,7 +67,7 @@ func main() {
 							return
 						}
 						db.Model(&model.LineUser{}).Where("user_id = ?", event.Source.UserID).Update("default_schedule_title", text)
-						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("Default scedule title set to %s.", text)))
+						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("Default scedule title set to %s.", text))).Do()
 					}
 
 					if err != nil {
