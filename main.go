@@ -88,9 +88,18 @@ func main() {
 									},
 								},
 							}
-							_, _, err := client.CreateCalendarEvent(ctx, accessToken, req)
+							calendarEventRes, httpRes, err := client.CreateCalendarEvent(ctx, accessToken, req)
 							if err != nil {
 								panic(err)
+							}
+							rateLimit := timetree.ParseRateLimit(httpRes)
+							log.Printf("RateLimit: %v\n", rateLimit)
+
+							switch httpRes.StatusCode {
+							case http.StatusOK, http.StatusCreated, http.StatusNoContent:
+								log.Printf("EventID: %s\n", calendarEventRes.Data.ID)
+							default:
+								log.Printf("Error: %s\n", calendarEventRes.ErrorResponse.Title)
 							}
 						}
 						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%d件の予定を作成", len(ss)))).Do()
