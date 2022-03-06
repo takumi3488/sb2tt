@@ -81,6 +81,7 @@ func main() {
 									Attributes: &timetree.Attributes{
 										Title:         v.title,
 										Category:      "schedule",
+										AllDay:        timetree.Bool(false),
 										StartAt:       v.start_at,
 										StartTimezone: "Asia/Tokyo",
 										EndAt:         v.end_at,
