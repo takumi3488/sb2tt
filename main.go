@@ -51,27 +51,31 @@ func main() {
 
 	// TimeTree Calender Appをカレンダーに追加した際の通知
 	r.POST("/timetree", func(c *gin.Context) {
-		res := struct {
-			Action       string `json:"action"`
-			Installation struct {
-				ID          string `json:"id"`
-				Application struct {
-					ID      string `json:"id"`
-					Name    string `json:"name"`
-					IconURL string `json:"icon_url"`
-				} `json:"application"`
-				Scopes    []string  `json:"scopes"`
-				UpdatedAt time.Time `json:"updated_at"`
-				CreatedAt time.Time `json:"created_at"`
-			} `json:"installation"`
-		}{}
-		c.BindJSON(&res)
-		if res.Action == "created" {
-			bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintf("INSTALLATION_ID\n%s", res.Installation))).Do()
-			c.JSON(200, gin.H{"res": res})
-		} else {
-			c.JSON(400, gin.H{"text": "Internal Error"})
-		}
+		// res := struct {
+		// 	Action       string `json:"action"`
+		// 	Installation struct {
+		// 		ID          string `json:"id"`
+		// 		Application struct {
+		// 			ID      string `json:"id"`
+		// 			Name    string `json:"name"`
+		// 			IconURL string `json:"icon_url"`
+		// 		} `json:"application"`
+		// 		Scopes    []string  `json:"scopes"`
+		// 		UpdatedAt time.Time `json:"updated_at"`
+		// 		CreatedAt time.Time `json:"created_at"`
+		// 	} `json:"installation"`
+		// }{}
+		// c.BindJSON(&res)
+		buf := make([]byte, 1024)
+		num, _ := c.Request.Body.Read(buf)
+		reqBody := string(buf[0:num])
+		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintf("INSTALLATION_ID\n%s", reqBody))).Do()
+		// if res.Action == "created" {
+		// 	bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintf("INSTALLATION_ID\n%s", res.Installation))).Do()
+		// 	c.JSON(200, gin.H{"res": res})
+		// } else {
+		// 	c.JSON(400, gin.H{"text": "Internal Error"})
+		// }
 	})
 	r.Run()
 }
