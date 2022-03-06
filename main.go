@@ -39,7 +39,13 @@ func main() {
 
 					if strings.HasSuffix(text, "シフト管理アプリ「シフトボード」で作成") {
 						// シフトボードからの共有
-						ss, err := parse(text, "", time.Now().Local())
+						var user model.LineUser
+						db, err := model.DbOpen()
+						if err != nil {
+							println(err.Error())
+						}
+						db.Where(&model.LineUser{UserId: event.Source.UserID}).First(&user)
+						ss, err := parse(text, user.DefaultScheduleTitle, time.Now().Local())
 						if err != nil {
 							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintln(err))).Do()
 						}
