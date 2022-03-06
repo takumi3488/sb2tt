@@ -62,7 +62,7 @@ func main() {
 				var user model.LineUser
 				db.FirstOrCreate(&user, model.LineUser{UserId: userId})
 				if user.InstallationId == 0 {
-					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Please send your installation id of TimeTree."))
+					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Please send your installation id of TimeTree.")).Do()
 				}
 			}
 		}
