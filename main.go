@@ -18,9 +18,6 @@ func main() {
 		println(err.Error())
 		return
 	}
-	if bot != nil {
-		println("OK")
-	}
 	r := gin.Default()
 
 	// LINE メッセージに対する処理
@@ -55,21 +52,26 @@ func main() {
 	// TimeTree Calender Appをカレンダーに追加した際の通知
 	r.POST("/timetree", func(c *gin.Context) {
 		res := struct {
-			action       string
-			installation struct {
-				id          string
-				application struct {
-					id string
-				}
-			}
+			Action       string `json:"action"`
+			Installation struct {
+				ID          string `json:"id"`
+				Application struct {
+					ID      string `json:"id"`
+					Name    string `json:"name"`
+					IconURL string `json:"icon_url"`
+				} `json:"application"`
+				Scopes    []string  `json:"scopes"`
+				UpdatedAt time.Time `json:"updated_at"`
+				CreatedAt time.Time `json:"created_at"`
+			} `json:"installation"`
 		}{}
 		c.BindJSON(&res)
-		buf := make([]byte, 2048)
-		n, _ := c.Request.Body.Read(buf)
-		b := string(buf[0:n])
-		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("A" + fmt.Sprintln(b))).Do()
-		if res.action == "created" {
-			c.JSON(200, gin.H{"res": fmt.Sprintln(b)})
+		fmt.Println(res.Installation)
+		bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage("A"+fmt.Sprintln(res))).Do()
+		if res.Action == "created" {
+			c.JSON(200, gin.H{"res": res})
+		} else {
+			c.JSON(400, gin.H{"text": "Internal Error"})
 		}
 	})
 	r.Run()
