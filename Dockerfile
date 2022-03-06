@@ -18,7 +18,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 
-FROM scratch as prod
+FROM alpine as prod
 
 WORKDIR /app
 COPY --from=builder /app/main .
