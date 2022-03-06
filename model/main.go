@@ -10,8 +10,8 @@ import (
 
 type LineUser struct {
 	gorm.Model
-	UserId string
-	InstallationId int
+	UserId               string `gorm:"unique;not null"`
+	InstallationId       int
 	DefaultScheduleTitle string
 }
 

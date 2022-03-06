@@ -52,10 +52,19 @@ func main() {
 			}
 
 			// フォロー/ブロック解除時の処理
-			// if event.Type == linebot.EventTypeFollow {
-			// 	userId := event.Source.UserID
-			// 	DbOpen()
-			// }
+			if event.Type == linebot.EventTypeFollow {
+				userId := event.Source.UserID
+				db, err := model.DbOpen()
+				if err != nil {
+					println(err.Error())
+					return
+				}
+				user := model.LineUser{UserId: userId}
+				db.Where(&user).Attrs(model.LineUser{}).FirstOrCreate(&user)
+				if user.InstallationId == 0 {
+					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Please send your installation id of TimeTree."))
+				}
+			}
 		}
 		c.JSON(200, gin.H{})
 	})
