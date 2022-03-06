@@ -41,7 +41,7 @@ func main() {
 						// シフトボードからの共有
 						ss, err := parse(text, "", time.Now().Local())
 						if err != nil {
-							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintln(err)))
+							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintln(err))).Do()
 						}
 						for _, v := range ss {
 							_, err := bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s\n%s-%s", v.title, v.start_at, v.end_at))).Do()
