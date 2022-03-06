@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"github.com/takumi3488/sb2tt/model"
 
 	"github.com/gin-gonic/gin"
@@ -58,8 +59,8 @@ func main() {
 					println(err.Error())
 					return
 				}
-				user := model.LineUser{UserId: userId}
-				db.Where(&model.LineUser{UserId: userId}).Attrs(&model.LineUser{}).FirstOrCreate(&user)
+				var user model.LineUser
+				db.FirstOrCreate(&user, model.LineUser{UserId: userId})
 				if user.InstallationId == 0 {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Please send your installation id of TimeTree."))
 				}
@@ -94,7 +95,7 @@ func main() {
 	})
 
 	// Migrate
-	r.POST("/migrate", func(c *gin.Context){
+	r.POST("/migrate", func(c *gin.Context) {
 		model.Migrate()
 		c.JSON(200, gin.H{"text": "migrated"})
 	})
