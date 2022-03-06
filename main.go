@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -38,7 +39,10 @@ func main() {
 
 					if strings.HasSuffix(text, "シフト管理アプリ「シフトボード」で作成") {
 						// シフトボードからの共有
-						ss := parse(text, "", time.Now().Local())
+						ss, err := parse(text, "", time.Now().Local())
+						if err != nil {
+							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintln(err)))
+						}
 						for _, v := range ss {
 							_, err := bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s\n%s-%s", v.title, v.start_at, v.end_at))).Do()
 							if err != nil {
@@ -131,15 +135,29 @@ type Schedule struct {
 	end_at   string
 }
 
-func parse(c string, ttl string, now time.Time) []Schedule {
-	rows := strings.Split(c, "\n")
+func parse(c string, ttl string, now time.Time) ([]Schedule, error) {
 	var shedules []Schedule
+	var err error
+	rows := strings.Split(c, "\n")
+	flg := false
+	for _, row := range rows {
+		if strings.HasPrefix(row, "- ") {
+			flg = true
+			break
+		}
+	}
+	if !flg && ttl == "" {
+		return shedules, errors.New("シフトボードでバイト先の表示をONにするか、デフォルトのシフト名を設定してください。")
+	}
 	for i := 0; ; i++ {
-		t := rows[2*i]
+		j := i
+		if flg {
+			j = 2 * j
+		}
+		t := strings.TrimSpace(rows[j])
 		if t == "" {
 			break
 		}
-		n := rows[2*i+1][2:]
 		month := t[0:2]
 		year := now.Year()
 		month_int, _ := strconv.Atoi(month)
@@ -152,8 +170,8 @@ func parse(c string, ttl string, now time.Time) []Schedule {
 		end_at := tt.Slice(16, 21)
 		s := new(Schedule)
 		s.title = ttl
-		if s.title == "" {
-			s.title = n
+		if flg {
+			s.title = rows[2*i+1][2:]
 		}
 		dt := fmt.Sprintf("%d-%s-%sT", year, month, date)
 		e := ":00.000Z"
@@ -161,5 +179,5 @@ func parse(c string, ttl string, now time.Time) []Schedule {
 		s.end_at = fmt.Sprintf("%s%s%s", dt, end_at, e)
 		shedules = append(shedules, *s)
 	}
-	return shedules
+	return shedules, err
 }
