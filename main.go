@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/takumi3488/sb2tt/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -20,17 +21,21 @@ func main() {
 	}
 	r := gin.Default()
 
-	// LINE メッセージに対する処理
+	// LINE イベントに対する処理
 	r.POST("/line", func(c *gin.Context) {
 		events, err := bot.ParseRequest(c.Request)
 		if err != nil {
 			println(err.Error())
 		}
+
 		for _, event := range events {
+			// メッセージ受信時の処理
 			if event.Type == linebot.EventTypeMessage {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					text := strings.TrimSpace(message.Text)
+
+					// シフトボードからの共有の場合
 					if strings.HasSuffix(text, "シフト管理アプリ「シフトボード」で作成") {
 						ss := parse(text, "", time.Now().Local())
 						for _, v := range ss {
@@ -45,6 +50,12 @@ func main() {
 					}
 				}
 			}
+
+			// フォロー/ブロック解除時の処理
+			// if event.Type == linebot.EventTypeFollow {
+			// 	userId := event.Source.UserID
+			// 	DbOpen()
+			// }
 		}
 		c.JSON(200, gin.H{})
 	})
@@ -72,6 +83,12 @@ func main() {
 		} else {
 			c.JSON(400, gin.H{"text": "Internal Error"})
 		}
+	})
+
+	// Migrate
+	r.POST("/migrate", func(c *gin.Context){
+		model.Migrate()
+		c.JSON(200, gin.H{"text": "migrated"})
 	})
 	r.Run()
 }
