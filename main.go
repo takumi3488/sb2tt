@@ -1,18 +1,21 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/takumi3488/sb2tt/model"
-
 	"github.com/gin-gonic/gin"
+	"github.com/gotokatsuya/timetree-sdk-go/timetree"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"github.com/takumi3488/sb2tt/model"
 	"golang.org/x/exp/utf8string"
 )
 
@@ -49,12 +52,48 @@ func main() {
 						if err != nil {
 							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintln(err))).Do()
 						}
+						ctx := context.Background()
+						calendarAppID := os.Getenv("CALENDAR_APP_ID")
+						privateKey := []byte(os.Getenv("PRIVATE_KEY"))
+						authenticator, err := timetree.NewCalendarAppAuthenticator(calendarAppID, timetree.DefaultAccessTokenLifetime, privateKey, http.DefaultClient)
+						if err != nil {
+							panic(err)
+						}
+						accessTokenRes, httpRes, err := authenticator.AccessToken(ctx, strconv.Itoa(user.InstallationId))
+						if err != nil {
+							panic(err)
+						}
+						switch httpRes.StatusCode {
+						case http.StatusOK, http.StatusCreated, http.StatusNoContent:
+							log.Printf("EventID: %s\n", accessTokenRes.AccessToken)
+						default:
+							log.Printf("Error: %s\n", accessTokenRes.ErrorResponse.Title)
+							return
+						}
+						accessToken := accessTokenRes.AccessToken
+						client, err := timetree.NewCalendarAppClient(http.DefaultClient)
+						if err != nil {
+							panic(err)
+						}
 						for _, v := range ss {
-							_, err := bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%s\n%s-%s", v.title, v.start_at, v.end_at))).Do()
+							req := &timetree.CreateCalendarEventRequest{
+								Data: &timetree.CalendarEventRequestData{
+									Attributes: &timetree.Attributes{
+										Title:         v.title,
+										Category:      "schedule",
+										StartAt:       v.start_at,
+										StartTimezone: "Asia/Tokyo",
+										EndAt:         v.end_at,
+										EndTimezone:   "Asia/Tokyo",
+									},
+								},
+							}
+							_, _, err := client.CreateCalendarEvent(ctx, accessToken, req)
 							if err != nil {
-								println(err.Error())
+								panic(err)
 							}
 						}
+						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(fmt.Sprintf("%d件の予定を作成", len(ss)))).Do()
 					} else if r := regexp.MustCompile(`\d+`); r.MatchString(text) {
 						// Installation id の設定
 						db, err := model.DbOpen()
