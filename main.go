@@ -83,9 +83,9 @@ func main() {
 										Category:      "schedule",
 										AllDay:        timetree.Bool(false),
 										StartAt:       v.start_at,
-										StartTimezone: "UTC",
+										StartTimezone: "Asia/Tokyo",
 										EndAt:         v.end_at,
-										EndTimezone:   "UTC",
+										EndTimezone:   "Asia/Tokyo",
 									},
 								},
 							}
@@ -229,7 +229,7 @@ func parse(c string, ttl string, now time.Time) ([]Schedule, error) {
 			s.title = rows[2*i+1][2:]
 		}
 		dt := fmt.Sprintf("%d-%s-%sT", year, month, date)
-		e := ":00.000Z"
+		e := ":00.000+0900"
 		s.start_at = fmt.Sprintf("%s%s%s", dt, start_at, e)
 		s.end_at = fmt.Sprintf("%s%s%s", dt, end_at, e)
 		shedules = append(shedules, *s)
