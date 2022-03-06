@@ -16,8 +16,7 @@ import (
 func main() {
 	bot, err := linebot.New(os.Getenv("LINE_CHANNEL_SECRET"), os.Getenv("LINE_ACCESS_TOKEN"))
 	if err != nil {
-		println(err.Error())
-		return
+		panic(err)
 	}
 	r := gin.Default()
 
@@ -99,7 +98,9 @@ func main() {
 		model.Migrate()
 		c.JSON(200, gin.H{"text": "migrated"})
 	})
-	r.Run()
+	if err := r.Run(); err != nil {
+		panic(err)
+	}
 }
 
 type Schedule struct {
