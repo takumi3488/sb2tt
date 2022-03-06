@@ -59,7 +59,7 @@ func main() {
 					return
 				}
 				user := model.LineUser{UserId: userId}
-				db.Where(&user).Attrs(model.LineUser{}).FirstOrCreate(&user)
+				db.Where(&model.LineUser{UserId: userId}).Attrs(&model.LineUser{}).FirstOrCreate(&user)
 				if user.InstallationId == 0 {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("Please send your installation id of TimeTree."))
 				}
