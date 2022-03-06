@@ -67,7 +67,7 @@ func main() {
 		}{}
 		c.BindJSON(&res)
 		if res.Action == "created" {
-			bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintf("INSTALLATION_ID\n%s", res.Installation.ID))).Do()
+			bot.PushMessage(os.Getenv("LINE_ADMIN_ID"), linebot.NewTextMessage(fmt.Sprintf("INSTALLATION_ID\n%s", res.Installation))).Do()
 			c.JSON(200, gin.H{"res": res})
 		} else {
 			c.JSON(400, gin.H{"text": "Internal Error"})
