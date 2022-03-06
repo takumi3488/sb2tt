@@ -83,9 +83,9 @@ func main() {
 										Category:      "schedule",
 										AllDay:        timetree.Bool(false),
 										StartAt:       v.start_at,
-										StartTimezone: "Asia/Tokyo",
+										StartTimezone: "UTC",
 										EndAt:         v.end_at,
-										EndTimezone:   "Asia/Tokyo",
+										EndTimezone:   "UTC",
 									},
 								},
 							}
